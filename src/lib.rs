@@ -100,6 +100,21 @@ fn create_secret(secret: &[u8]) -> SecretKey {
     }
 }
 
+fn to_ed25519_bytes(secret: &[u8]) -> [u8; 64] {
+    let bytes = SecretKey::from_bytes(secret)
+                    .unwrap()
+                    .to_ed25519_bytes();
+
+    return bytes;
+}
+
+fn from_ed25519_bytes(secret: &[u8]) -> SecretKey {
+    match SecretKey::from_ed25519_bytes(secret) {
+        Ok(secret) => return secret,
+        Err(_) => panic!("Provided secret is invalid."),
+    }
+}
+
 /// Size of input SEED for derivation, bytes
 pub const SR25519_SEED_SIZE: c_ulong = 32;
 
@@ -208,6 +223,32 @@ pub unsafe extern "C" fn sr25519_keypair_from_seed(keypair_out: *mut u8, seed_pt
     let seed = slice::from_raw_parts(seed_ptr, SR25519_SEED_SIZE as usize);
     let kp = create_from_seed(seed);
     ptr::copy(kp.to_bytes().as_ptr(), keypair_out, SR25519_KEYPAIR_SIZE as usize);
+}
+
+/// Converts secret key to ed25519 representation.
+///
+/// * secret_out: 64 bytes, pre-allocated output buffer of SR25519_SECRET_SIZE bytes
+/// * secret_ptr: generation seed - input buffer of SR25519_SECRET_SIZE bytes
+///
+#[allow(unused_attributes)]
+#[no_mangle]
+pub unsafe extern "C" fn sr25519_to_ed25519_bytes(secret_out: *mut u8, secret_ptr: *const u8) {
+    let secret = slice::from_raw_parts(secret_ptr, SR25519_SECRET_SIZE as usize);
+    let bytes = to_ed25519_bytes(secret);
+    ptr::copy(bytes.as_ptr(), secret_out, SR25519_SECRET_SIZE as usize);
+}
+
+/// Retrives secret key from ed25519 representation.
+///
+/// * secret_out: 64 bytes, pre-allocated output buffer of SR25519_SECRET_SIZE bytes
+/// * secret_ptr: generation seed - input buffer of SR25519_SECRET_SIZE bytes
+///
+#[allow(unused_attributes)]
+#[no_mangle]
+pub unsafe extern "C" fn sr25519_from_ed25519_bytes(secret_out: *mut u8, secret_ptr: *const u8) {
+    let secret = slice::from_raw_parts(secret_ptr, SR25519_SECRET_SIZE as usize);
+    let sk = from_ed25519_bytes(secret);
+    ptr::copy(sk.to_bytes().as_ptr(), secret_out, SR25519_SECRET_SIZE as usize);
 }
 
 /// Sign a message

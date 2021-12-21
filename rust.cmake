@@ -1,6 +1,3 @@
-must_have_exe(rustc)
-must_have_exe(cargo)
-
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
   set(path_prefix "${CMAKE_BINARY_DIR}/release")
   set(release_option "--release")
@@ -49,7 +46,6 @@ ifd_install(${CMAKE_SOURCE_DIR}/sr25519Config-noconfig.cmake ${CMAKE_INSTALL_LIB
 add_custom_target(
     cargo_build
     ALL
-    COMMAND cargo build --target-dir ${CMAKE_BINARY_DIR} ${release_option}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
