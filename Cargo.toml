@@ -8,7 +8,7 @@ build = "build.rs"
 [lib]
 name = "sr25519crust"
 # probably we need to add dylib/lib/dll for mac/linux/windows
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["staticlib"]
 
 [dependencies]
 schnorrkel = { version="0.9.1" }
